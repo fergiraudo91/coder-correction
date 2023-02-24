@@ -10,10 +10,11 @@ import { Server } from "socket.io"
 import mongoose from "mongoose"
 import messageModel from "./dao/models/message.model.js"
 import sessionRouter from './routes/session.router.js'
-import session from "express-session"
-import MongoStore from "connect-mongo"
+import cookieParser from "cookie-parser"
 import passport from "passport"
 import initializePassport from "./config/passport.config.js"
+import { passportCall, authorization } from "./utils.js"
+import session from "express-session"
 
 const app = express()
 const server = http.createServer(app)
@@ -21,6 +22,11 @@ const io = new Server(server)
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser('cookieSecret'))
+initializePassport()
+app.use(passport.initialize())
+app.use(session({secret: 'mysecret', resave: false, saveUninitialized: true}))
+app.use(passport.session())
 
 // Configurando el motor de plantillas
 app.engine('handlebars', handlebars.engine())
@@ -28,56 +34,42 @@ app.set('views', __dirname + '/views')
 app.set('view engine', 'handlebars')
 app.use(express.static(__dirname + '/public'))
 
+// Autorización
+// function requireAuth(req, res, next) {
+//     if(req.session?.user) {
+//         return next()
+//     } else {
+//         return res.status(401).json({status: 'error', payload: 'not authenticated'})
+//     }
+// }
+
+// Configuración de rutas
+app.use('/api/products', passportCall('current'), authorization('user'), productsRouter)
+app.use('/api/carts', cartsRouter)
+app.use('/api/sessions', sessionRouter)
+app.use('/chat', chatRouter)
+app.use('/', viewsRouter)
+
+// Conectando mongoose con Atlas e iniciando el servidor
 const MONGO_URI = "mongodb+srv://ValperAdmin:KC5jUZX-UkxdV9C@valper.bscvobk.mongodb.net/?retryWrites=true&w=majority"
 const DB_NAME = "Valper"
 
 
-// Middleware
-// Configurar sessions y passport
-app.use(session({
-    store: MongoStore.create({
-        mongoUrl: MONGO_URI,
-        dbName: DB_NAME
-    }),
-    secret: 'mysecret',
-    resave: true,
-    saveUninitialized: true
-}))
-initializePassport()
-app.use(passport.initialize())
-app.use(passport.session())
 
-// Autorización
-function requireAuth(req, res, next) {
-    if(req.session?.user) {
-        return next()
-    } else {
-        return res.status(401).json({status: 'error', payload: 'not authenticated'})
-    }
-}
-
-// Configuración de rutas
-app.use('/api/products', requireAuth, productsRouter)
-app.use('/api/carts', requireAuth, cartsRouter)
-app.use('/api/sessions', sessionRouter)
-app.use('/chat', requireAuth, chatRouter)
-app.use('/', viewsRouter)
-
-// Conectando mongoose con Atlas e iniciando el servidor
 mongoose.set('strictQuery', false)
-mongoose.connect(MONGO_URI, { dbName: 'Valper'}, error => {
+mongoose.connect(MONGO_URI, { dbName: DB_NAME}, error => {
     if(error) {
-        console.log("No se puede conectar a DB")
+        console.log("Can't connect to the DB")
         return
     }
 
-    console.log('DB Conectada')
-    server.listen(8080, () => console.log('Escuchando en puerto 8080'))
+    console.log('DB connected')
+    server.listen(8080, () => console.log('Listening on port 8080'))
     server.on('error', e => console.log(e))
 })
 
 io.on('connection', socket => {
-    console.log('Nuevo websocket conectado')
+    console.log('New websocket connection')
 
     socket.on('chatMessage', async (obj) => {
         io.emit('message', obj)

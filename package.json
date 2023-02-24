@@ -1,5 +1,5 @@
 {
-  "name": "estrategias_de_autenticacion",
+  "name": "segunda_practica_integradora",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -9,7 +9,7 @@
     "watch": "npx tailwindcss -i ./src/views/layouts/index.css -o ./src/public/css/styles.css --watch"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jeremias Palmero",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",

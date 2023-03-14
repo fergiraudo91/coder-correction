@@ -1,11 +1,10 @@
-import express from 'express'
+import express from "express";
 
+const router = express.Router();
 
-const router = express.Router()
+router.get("/", (req, res) => {
+  const user = req.session.user;
+  res.render("chat", { user });
+});
 
-router.get('/', (req, res) => {
-    const user = req.session.user
-    res.render('chat', {user})
-})
-
-export default router
+export default router;

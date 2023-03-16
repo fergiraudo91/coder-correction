@@ -16,8 +16,10 @@ export const generateToken = (user) => {
 export const passportCall = (strategy) => {
   return async (req, res, next) => {
     passport.authenticate(strategy, function (err, user) {
+      console.log("INVALID C");
       if (err) return next(err);
       if (!user) {
+        console.log("INVALID C");
         return res
           .status(401)
           .json({ status: "error", error: "Invalid credentials" });
@@ -31,15 +33,17 @@ export const passportCall = (strategy) => {
 
 export const viewsPassportCall = (strategy) => {
   return async (req, res, next) => {
+    console.log(req)
     passport.authenticate(strategy, function (err, user) {
+      console.log("user", strategy);
       if (err) return next(err);
-      if (!user) {
-        return res
-          .status(401)
-          .render("errors/base", { error: "Invalid credentials" });
-      }
+      // if (!user) {
+      //   return res
+      //     .status(401)
+      //     .render("errors/base", { error: "Invalid credentials" });
+      // }
 
-      req.user = user;
+      // req.user = user;
       next();
     })(req, res, next);
   };

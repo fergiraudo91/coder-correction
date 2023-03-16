@@ -186,11 +186,14 @@ export const register = async (req, res) => {
 // Login
 export const login = async (req, res) => {
   const user = req.user;
-  if (!user)
+  console.log(user);
+  if (!user){
+    console.log("POR QUE LLEGUE")
     return res
       .status(400)
       .render("errors/base", {error: "Invalid credentials", user});
-
+  }
+  console.log("TOKEN", user.token);
 
   res.cookie("cookieToken", user.token).redirect("/products");
 };

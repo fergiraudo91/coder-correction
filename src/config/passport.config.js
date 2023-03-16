@@ -94,21 +94,27 @@ const initializePassport = () => {
 
             return done(null, admin);
           }
-
+          console.log("LLEGUE POR AQUI!");
           const user = await UserModel.findOne({ email: username })
             .lean()
             .exec();
+            console.log(user);
           if (!user) {
             console.log("User doesn't exist");
             return done(null, false);
           }
-          if (!isValidPassword(user, password)) return done(null, false);
+          if (!isValidPassword(user, password)) {
+            console.log("NO ES VALIDOOOO!")
+            return done(null, false);
+          }
 
           const token = generateToken(user);
+          console.log("TOKEN!", token);
           user.token = token;
-
+          console.log("LLEGUE ANTES DEL DONE")
           return done(null, user);
         } catch (error) {
+          console.log("ENTRE EN EL CATCH!")
           return done(error);
         }
       }

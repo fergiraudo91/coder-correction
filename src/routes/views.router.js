@@ -55,7 +55,15 @@ router.post("/carts/:cid/products/:pid", addToCart);
 router.get("/sessions/register", renderRegister);
 router.get("/sessions/login", renderLogin);
 router.post("/sessions/register", viewsPassportCall("register"), register);
-router.post("/sessions/login", viewsPassportCall("login"), login);
+router.post('/sessions/login', passport.authenticate('login', { failureRedirect: '/session/faillogin' }), async (req, res) => {
+  if (!req.user) {
+      return res.status(400).send({ status: "error", error: "Invalid credentiales" })
+  }
+  console.log(req.user.token);
+  console.log("HOLAAAAAAAA")
+  res.cookie('cookieToken', req.user.token).redirect('/products')
+  
+})
 router.get("/sessions/logout", logout);
 router.get(
   "/sessions/user",
@@ -65,7 +73,7 @@ router.get(
 );
 router.get(
   "/api/sessions/githubcallback",
-  passport.authenticate("github", { failureRedirect: "/login" }),
+  passport.authenticate("github", { failureRedirect: "/session/login" }),
   githubLogin
 );
 
